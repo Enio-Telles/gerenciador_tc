@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   Folder, File, HardDrive, Cloud, CheckSquare, Square, 
-  DownloadCloud, Trash2, ArrowUpRight, Plus, Edit3, ArrowLeft, Eye 
+  DownloadCloud, Trash2, ArrowUpRight, Plus, Edit3, ArrowLeft, Eye, FolderOpen, ChevronRight
 } from 'lucide-react';
 
 export function FileBrowser({ 
@@ -34,8 +34,23 @@ export function FileBrowser({
     if (currentPath === '/' || !currentPath) return;
     const parts = currentPath.split('/').filter(Boolean);
     parts.pop();
-    const parent = '/' + parts.join('/');
+    const parent = parts.length === 0 ? '/' : '/' + parts.join('/');
     onNavigatePath(parent);
+  };
+
+  // Helper to build clickable breadcrumbs
+  const getBreadcrumbs = () => {
+    if (currentPath === '/' || !currentPath) {
+      return [{ label: 'Data (Raiz)', path: '/' }];
+    }
+    const parts = currentPath.split('/').filter(Boolean);
+    const crumbs = [{ label: 'Data', path: '/' }];
+    let accumulated = '';
+    parts.forEach(part => {
+      accumulated += `/${part}`;
+      crumbs.push({ label: part, path: accumulated });
+    });
+    return crumbs;
   };
 
   return (
@@ -47,9 +62,28 @@ export function FileBrowser({
             <HardDrive size={20} color="#38bdf8" />
             <div>
               <h2 style={{ margin: 0 }}>Apple Time Capsule 2TB (\Data)</h2>
-              <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                Caminho atual: <strong>{currentPath || '/'}</strong>
-              </span>
+              
+              {/* Breadcrumb Navigation Bar */}
+              <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '4px', fontSize: '12px', marginTop: '4px', color: 'var(--text-muted)' }}>
+                <span>Caminho:</span>
+                {getBreadcrumbs().map((crumb, idx, arr) => (
+                  <span key={crumb.path} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    <span 
+                      onClick={() => onNavigatePath(crumb.path)}
+                      style={{ 
+                        color: idx === arr.length - 1 ? '#38bdf8' : 'var(--text-secondary)',
+                        fontWeight: idx === arr.length - 1 ? '600' : 'normal',
+                        cursor: 'pointer',
+                        textDecoration: 'underline'
+                      }}
+                      title={`Navegar para ${crumb.label}`}
+                    >
+                      {crumb.label}
+                    </span>
+                    {idx < arr.length - 1 && <ChevronRight size={12} color="#64748b" />}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -108,6 +142,23 @@ export function FileBrowser({
         </div>
 
         <div className="file-list">
+          {/* Item de Voltar de Pasta se não estiver na raiz */}
+          {currentPath !== '/' && (
+            <div 
+              className="file-item"
+              onClick={handleGoBack}
+              style={{ cursor: 'pointer', background: 'rgba(56, 189, 248, 0.05)', borderBottom: '1px dashed var(--border-color)' }}
+              title="Clique para subir um nível de pasta"
+            >
+              <div className="file-info" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <ArrowLeft size={18} color="#38bdf8" />
+                <span style={{ fontWeight: '500', color: '#38bdf8', fontSize: '13px' }}>
+                  .. (Diretório Anterior)
+                </span>
+              </div>
+            </div>
+          )}
+
           {tcFiles.length === 0 ? (
             <div style={{ padding: '30px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '13px' }}>
               Esta pasta está vazia. Clique em <strong>"+ Novo"</strong> para adicionar um arquivo ou pasta.
@@ -115,44 +166,68 @@ export function FileBrowser({
           ) : (
             tcFiles.map((file) => {
               const isSelected = selectedFiles.some(f => f.id === file.id);
+              const isDir = file.type === 'directory';
+
               return (
                 <div 
                   key={file.id} 
                   className={`file-item ${isSelected ? 'selected' : ''}`}
+                  onDoubleClick={() => handleFolderClick(file)}
                 >
                   <div 
                     className="file-info"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onToggleSelectFile(file);
-                    }}
+                    style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '10px' }}
                   >
-                    {isSelected ? <CheckSquare size={16} color="#38bdf8" /> : <Square size={16} color="#64748b" />}
-                    {file.type === 'directory' ? <Folder size={18} color="#38bdf8" /> : <File size={18} color="#94a3b8" />}
+                    <div 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onToggleSelectFile(file);
+                      }}
+                      style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                      title="Selecionar item"
+                    >
+                      {isSelected ? <CheckSquare size={16} color="#38bdf8" /> : <Square size={16} color="#64748b" />}
+                    </div>
+
                     <div 
                       onClick={(e) => {
                         e.stopPropagation();
                         handleFolderClick(file);
                       }}
-                      style={{ cursor: 'pointer' }}
-                      title={file.type === 'directory' ? 'Clique para abrir pasta' : 'Clique para visualizar e editar'}
+                      style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', flex: 1 }}
+                      title={isDir ? `Clique para abrir a pasta ${file.name}` : `Clique para editar o arquivo ${file.name}`}
                     >
-                      <div className="file-name" style={{ color: file.type === 'directory' ? '#38bdf8' : 'inherit' }}>
-                        {file.name}
+                      {isDir ? <FolderOpen size={18} color="#38bdf8" /> : <File size={18} color="#94a3b8" />}
+                      <div>
+                        <div className="file-name" style={{ color: isDir ? '#38bdf8' : 'inherit', fontWeight: isDir ? '600' : 'normal' }}>
+                          {file.name}
+                        </div>
+                        <div className="file-meta">{file.sizeFormatted} • Modificado em {file.modified}</div>
                       </div>
-                      <div className="file-meta">{file.sizeFormatted} • Modificado em {file.modified}</div>
                     </div>
                   </div>
 
                   <div className="file-actions" style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
                     <span className="badge badge-tc" style={{ fontSize: '11px' }}>{file.category}</span>
-                    <button 
-                      className="btn-icon" 
-                      onClick={() => onOpenFileEditor(file)}
-                      title="Abrir editor / detalhes"
-                    >
-                      <Eye size={14} color="#94a3b8" />
-                    </button>
+                    
+                    {isDir ? (
+                      <button 
+                        className="btn btn-secondary"
+                        onClick={() => handleFolderClick(file)}
+                        style={{ padding: '4px 8px', fontSize: '11px', gap: '4px' }}
+                        title="Abrir conteúdo da pasta"
+                      >
+                        <FolderOpen size={12} color="#38bdf8" /> Abrir Pasta
+                      </button>
+                    ) : (
+                      <button 
+                        className="btn-icon" 
+                        onClick={() => onOpenFileEditor(file)}
+                        title="Abrir editor / detalhes"
+                      >
+                        <Eye size={14} color="#94a3b8" />
+                      </button>
+                    )}
                   </div>
                 </div>
               );

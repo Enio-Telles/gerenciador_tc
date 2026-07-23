@@ -17,6 +17,7 @@ class TimeCapsuleService {
     };
 
     this.mockFiles = [
+      // Raiz (/)
       {
         id: 'tc-file-1',
         name: 'TimeMachine_MacBook.sparsebundle',
@@ -42,32 +43,6 @@ class TimeCapsuleService {
         offloadable: true,
         category: 'photos',
         content: 'Diretório contendo 45.200 fotos em formato RAW e JPEG separadas por ano.'
-      },
-      {
-        id: 'tc-sub-1',
-        name: 'Viagem_Europa_2019',
-        type: 'directory',
-        sizeGB: 42.1,
-        sizeFormatted: '42.1 GB',
-        modified: '2026-06-10 11:00',
-        path: '/Fotos_Arquivadas_2015-2022/Viagem_Europa_2019',
-        parentPath: '/Fotos_Arquivadas_2015-2022',
-        offloadable: true,
-        category: 'photos',
-        content: 'Fotos da viagem à Europa em 2019.'
-      },
-      {
-        id: 'tc-sub-2',
-        name: 'Relatorio_Viagem.txt',
-        type: 'file',
-        sizeGB: 0.01,
-        sizeFormatted: '12 KB',
-        modified: '2026-06-12 15:30',
-        path: '/Fotos_Arquivadas_2015-2022/Relatorio_Viagem.txt',
-        parentPath: '/Fotos_Arquivadas_2015-2022',
-        offloadable: false,
-        category: 'documents',
-        content: 'Anotações da Viagem à Europa:\n- Paris: Louvre, Torre Eiffel, Versalhes.\n- Roma: Coliseu, Vaticano, Fontana di Trevi.\n- Amsterdã: Canais, Museu Van Gogh.'
       },
       {
         id: 'tc-file-3',
@@ -120,6 +95,252 @@ class TimeCapsuleService {
         offloadable: true,
         category: 'documents',
         content: 'Configuração da Time Capsule A1409:\n- IP Fixo: 192.168.1.100\n- Protocolo: SMBv1 e SMBv2 ativados\n- Compartilhamento: \\\\AirPort-Time-Capsule\\Data\n- Status dos discos: OK (Western Digital Green 2TB)'
+      },
+
+      // Subarquivos em /TimeMachine_MacBook.sparsebundle
+      {
+        id: 'tc-tm-1',
+        name: 'Info.plist',
+        type: 'file',
+        sizeGB: 0.001,
+        sizeFormatted: '4 KB',
+        modified: '2026-07-20 14:30',
+        path: '/TimeMachine_MacBook.sparsebundle/Info.plist',
+        parentPath: '/TimeMachine_MacBook.sparsebundle',
+        offloadable: false,
+        category: 'backup',
+        content: '<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN">\n<plist version="1.0">\n<dict>\n  <key>CFBundleInfoDictionaryVersion</key>\n  <string>6.0</string>\n  <key>CFBundleName</key>\n  <string>Time Machine Backup</string>\n  <key>Size</key>\n  <integer>680394829104</integer>\n</dict>\n</plist>'
+      },
+      {
+        id: 'tc-tm-2',
+        name: 'token',
+        type: 'file',
+        sizeGB: 0.001,
+        sizeFormatted: '1 KB',
+        modified: '2026-07-20 14:30',
+        path: '/TimeMachine_MacBook.sparsebundle/token',
+        parentPath: '/TimeMachine_MacBook.sparsebundle',
+        offloadable: false,
+        category: 'backup',
+        content: 'a8f93bc09e112d48c0812984bb3'
+      },
+      {
+        id: 'tc-tm-3',
+        name: 'com.apple.TimeMachine.SnapshotHistory.plist',
+        type: 'file',
+        sizeGB: 0.002,
+        sizeFormatted: '12 KB',
+        modified: '2026-07-20 14:28',
+        path: '/TimeMachine_MacBook.sparsebundle/com.apple.TimeMachine.SnapshotHistory.plist',
+        parentPath: '/TimeMachine_MacBook.sparsebundle',
+        offloadable: false,
+        category: 'backup',
+        content: 'Historico de Snapshots do macOS:\n- 2026-07-20-143011\n- 2026-07-19-180005\n- 2026-07-18-091522'
+      },
+      {
+        id: 'tc-tm-4',
+        name: 'bands',
+        type: 'directory',
+        sizeGB: 680.3,
+        sizeFormatted: '680.3 GB',
+        modified: '2026-07-20 14:30',
+        path: '/TimeMachine_MacBook.sparsebundle/bands',
+        parentPath: '/TimeMachine_MacBook.sparsebundle',
+        offloadable: true,
+        category: 'backup',
+        content: 'Pasta de blocos comprimidos de backup (bands de 512 MB cada).'
+      },
+
+      // Subarquivos em /TimeMachine_MacBook.sparsebundle/bands
+      {
+        id: 'tc-band-1',
+        name: 'band_0001.bin',
+        type: 'file',
+        sizeGB: 0.512,
+        sizeFormatted: '512 MB',
+        modified: '2026-07-20 14:30',
+        path: '/TimeMachine_MacBook.sparsebundle/bands/band_0001.bin',
+        parentPath: '/TimeMachine_MacBook.sparsebundle/bands',
+        offloadable: true,
+        category: 'backup',
+        content: '[Dados binários criptografados do backup]'
+      },
+      {
+        id: 'tc-band-2',
+        name: 'band_0002.bin',
+        type: 'file',
+        sizeGB: 0.512,
+        sizeFormatted: '512 MB',
+        modified: '2026-07-20 14:30',
+        path: '/TimeMachine_MacBook.sparsebundle/bands/band_0002.bin',
+        parentPath: '/TimeMachine_MacBook.sparsebundle/bands',
+        offloadable: true,
+        category: 'backup',
+        content: '[Dados binários criptografados do backup]'
+      },
+
+      // Subarquivos em /Fotos_Arquivadas_2015-2022
+      {
+        id: 'tc-sub-1',
+        name: 'Viagem_Europa_2019',
+        type: 'directory',
+        sizeGB: 42.1,
+        sizeFormatted: '42.1 GB',
+        modified: '2026-06-10 11:00',
+        path: '/Fotos_Arquivadas_2015-2022/Viagem_Europa_2019',
+        parentPath: '/Fotos_Arquivadas_2015-2022',
+        offloadable: true,
+        category: 'photos',
+        content: 'Fotos da viagem à Europa em 2019.'
+      },
+      {
+        id: 'tc-sub-2',
+        name: 'Ano_2021_Familia',
+        type: 'directory',
+        sizeGB: 85.0,
+        sizeFormatted: '85.0 GB',
+        modified: '2026-05-20 16:15',
+        path: '/Fotos_Arquivadas_2015-2022/Ano_2021_Familia',
+        parentPath: '/Fotos_Arquivadas_2015-2022',
+        offloadable: true,
+        category: 'photos',
+        content: 'Álbum de fotos de família de 2021.'
+      },
+      {
+        id: 'tc-sub-3',
+        name: 'Relatorio_Viagem.txt',
+        type: 'file',
+        sizeGB: 0.001,
+        sizeFormatted: '12 KB',
+        modified: '2026-06-12 15:30',
+        path: '/Fotos_Arquivadas_2015-2022/Relatorio_Viagem.txt',
+        parentPath: '/Fotos_Arquivadas_2015-2022',
+        offloadable: false,
+        category: 'documents',
+        content: 'Anotações da Viagem à Europa:\n- Paris: Louvre, Torre Eiffel, Versalhes.\n- Roma: Coliseu, Vaticano, Fontana di Trevi.\n- Amsterdã: Canais, Museu Van Gogh.'
+      },
+
+      // Subarquivos em /Fotos_Arquivadas_2015-2022/Viagem_Europa_2019
+      {
+        id: 'tc-fe-1',
+        name: 'DSC_001_TorreEiffel.NEF',
+        type: 'file',
+        sizeGB: 0.024,
+        sizeFormatted: '24.5 MB',
+        modified: '2019-07-14 18:20',
+        path: '/Fotos_Arquivadas_2015-2022/Viagem_Europa_2019/DSC_001_TorreEiffel.NEF',
+        parentPath: '/Fotos_Arquivadas_2015-2022/Viagem_Europa_2019',
+        offloadable: true,
+        category: 'photos',
+        content: '[Imagem RAW da Torre Eiffel ao pôr do sol]'
+      },
+      {
+        id: 'tc-fe-2',
+        name: 'DSC_002_Coliseu_Roma.NEF',
+        type: 'file',
+        sizeGB: 0.022,
+        sizeFormatted: '22.1 MB',
+        modified: '2019-07-18 10:15',
+        path: '/Fotos_Arquivadas_2015-2022/Viagem_Europa_2019/DSC_002_Coliseu_Roma.NEF',
+        parentPath: '/Fotos_Arquivadas_2015-2022/Viagem_Europa_2019',
+        offloadable: true,
+        category: 'photos',
+        content: '[Imagem RAW do Coliseu de Roma]'
+      },
+      {
+        id: 'tc-fe-3',
+        name: 'Roteiro_Viagem.pdf',
+        type: 'file',
+        sizeGB: 0.001,
+        sizeFormatted: '1.2 MB',
+        modified: '2019-07-01 09:00',
+        path: '/Fotos_Arquivadas_2015-2022/Viagem_Europa_2019/Roteiro_Viagem.pdf',
+        parentPath: '/Fotos_Arquivadas_2015-2022/Viagem_Europa_2019',
+        offloadable: false,
+        category: 'documents',
+        content: 'Roteiro completo de passagens, reservas de hotel e trens Eurostar.'
+      },
+
+      // Subarquivos em /Videos_RAW_Projetos_4K
+      {
+        id: 'tc-v-1',
+        name: 'Projeto_Documentario_Cena01.mov',
+        type: 'file',
+        sizeGB: 140.0,
+        sizeFormatted: '140.0 GB',
+        modified: '2026-05-10 18:45',
+        path: '/Videos_RAW_Projetos_4K/Projeto_Documentario_Cena01.mov',
+        parentPath: '/Videos_RAW_Projetos_4K',
+        offloadable: true,
+        category: 'videos',
+        content: '[Arquivo de vídeo bruto ProRes 422 4K 60fps]'
+      },
+      {
+        id: 'tc-v-2',
+        name: 'Projeto_Documentario_Cena02.mov',
+        type: 'file',
+        sizeGB: 180.0,
+        sizeFormatted: '180.0 GB',
+        modified: '2026-05-10 19:10',
+        path: '/Videos_RAW_Projetos_4K/Projeto_Documentario_Cena02.mov',
+        parentPath: '/Videos_RAW_Projetos_4K',
+        offloadable: true,
+        category: 'videos',
+        content: '[Arquivo de vídeo bruto ProRes 422 4K 60fps]'
+      },
+      {
+        id: 'tc-v-3',
+        name: 'Audio_Master_Dolby.wav',
+        type: 'file',
+        sizeGB: 60.0,
+        sizeFormatted: '60.0 GB',
+        modified: '2026-05-10 17:00',
+        path: '/Videos_RAW_Projetos_4K/Audio_Master_Dolby.wav',
+        parentPath: '/Videos_RAW_Projetos_4K',
+        offloadable: true,
+        category: 'videos',
+        content: '[Arquivo de áudio multicanal 96kHz 24-bit]'
+      },
+
+      // Subarquivos em /ISOs_e_Instaladores_Antigos
+      {
+        id: 'tc-iso-1',
+        name: 'Ubuntu_22.04_LTS.iso',
+        type: 'file',
+        sizeGB: 4.2,
+        sizeFormatted: '4.2 GB',
+        modified: '2025-04-10 14:00',
+        path: '/ISOs_e_Instaladores_Antigos/Ubuntu_22.04_LTS.iso',
+        parentPath: '/ISOs_e_Instaladores_Antigos',
+        offloadable: true,
+        category: 'archive',
+        content: '[Imagem ISO do Ubuntu Server / Desktop]'
+      },
+      {
+        id: 'tc-iso-2',
+        name: 'Windows_Server_2022.iso',
+        type: 'file',
+        sizeGB: 5.1,
+        sizeFormatted: '5.1 GB',
+        modified: '2025-08-12 10:30',
+        path: '/ISOs_e_Instaladores_Antigos/Windows_Server_2022.iso',
+        parentPath: '/ISOs_e_Instaladores_Antigos',
+        offloadable: true,
+        category: 'archive',
+        content: '[Imagem ISO do Windows Server]'
+      },
+      {
+        id: 'tc-iso-3',
+        name: 'macOS_Monterey_Installer.app.zip',
+        type: 'file',
+        sizeGB: 12.3,
+        sizeFormatted: '12.3 GB',
+        modified: '2025-11-04 11:20',
+        path: '/ISOs_e_Instaladores_Antigos/macOS_Monterey_Installer.app.zip',
+        parentPath: '/ISOs_e_Instaladores_Antigos',
+        offloadable: true,
+        category: 'archive',
+        content: '[Instalador do macOS Monterey em formato ZIP]'
       }
     ];
   }
@@ -230,4 +451,3 @@ class TimeCapsuleService {
 }
 
 export const timeCapsuleService = new TimeCapsuleService();
-

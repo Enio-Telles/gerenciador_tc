@@ -40,6 +40,27 @@ app.get('/api/timecapsule/files', async (req, res) => {
   res.json(files);
 });
 
+app.get('/api/timecapsule/file-details/:id', async (req, res) => {
+  const details = await timeCapsuleService.getFileDetails(req.params.id);
+  if (!details) return res.status(404).json({ error: 'Arquivo não encontrado' });
+  res.json(details);
+});
+
+app.post('/api/timecapsule/save-file', async (req, res) => {
+  const result = await timeCapsuleService.saveFile(req.body);
+  res.json(result);
+});
+
+app.post('/api/timecapsule/create-item', async (req, res) => {
+  const result = await timeCapsuleService.createItem(req.body);
+  res.json(result);
+});
+
+app.delete('/api/timecapsule/delete-item/:id', async (req, res) => {
+  const result = await timeCapsuleService.deleteItem(req.params.id);
+  res.json(result);
+});
+
 app.post('/api/timecapsule/test-connection', async (req, res) => {
   const { ip, shareName, password } = req.body;
   const result = await timeCapsuleService.testConnection({ ip, shareName, password });

@@ -5,18 +5,23 @@ import { FileBrowser } from './components/FileBrowser';
 import { JobMonitor } from './components/JobMonitor';
 import { AutoRulesModal } from './components/AutoRulesModal';
 import { TCConfigModal } from './components/TCConfigModal';
+import { FileEditorModal } from './components/FileEditorModal';
+import { NewItemModal } from './components/NewItemModal';
 
 export function App() {
   const [status, setStatus] = useState(null);
+  const [currentPath, setCurrentPath] = useState('/');
   const [tcFiles, setTcFiles] = useState([]);
   const [cloudFiles, setCloudFiles] = useState([]);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [jobs, setJobs] = useState([]);
   const [rules, setRules] = useState([]);
 
-  // Modals
+  // Modals state
   const [isRulesOpen, setIsRulesOpen] = useState(false);
   const [isConfigOpen, setIsConfigOpen] = useState(false);
+  const [isNewItemOpen, setIsNewItemOpen] = useState(false);
+  const [editingFile, setEditingFile] = useState(null);
 
   const fetchStatus = async () => {
     try {
@@ -30,9 +35,9 @@ export function App() {
     }
   };
 
-  const fetchTcFiles = async () => {
+  const fetchTcFiles = async (path = currentPath) => {
     try {
-      const res = await fetch('http://localhost:3001/api/timecapsule/files');
+      const res = await fetch(`http://localhost:3001/api/timecapsule/files?path=${encodeURIComponent(path)}`);
       if (res.ok) {
         const data = await res.json();
         setTcFiles(data.files || []);
@@ -80,7 +85,7 @@ export function App() {
 
   useEffect(() => {
     fetchStatus();
-    fetchTcFiles();
+    fetchTcFiles(currentPath);
     fetchCloudFiles('onedrive');
     fetchJobs();
     fetchRules();
@@ -92,6 +97,12 @@ export function App() {
 
     return () => clearInterval(interval);
   }, []);
+
+  const handleNavigatePath = (newPath) => {
+    setCurrentPath(newPath);
+    setSelectedFiles([]);
+    fetchTcFiles(newPath);
+  };
 
   const handleToggleSelectFile = (file) => {
     if (selectedFiles.some(f => f.id === file.id)) {
@@ -107,6 +118,57 @@ export function App() {
     } else {
       setSelectedFiles([...tcFiles]);
     }
+  };
+
+  const handleOpenFileEditor = async (file) => {
+    try {
+      const res = await fetch(`http://localhost:3001/api/timecapsule/file-details/${file.id}`);
+      if (res.ok) {
+        const details = await res.json();
+        setEditingFile(details);
+      } else {
+        setEditingFile(file);
+      }
+    } catch (e) {
+      setEditingFile(file);
+    }
+  };
+
+  const handleSaveFile = async (updatedData) => {
+    const res = await fetch('http://localhost:3001/api/timecapsule/save-file', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updatedData)
+    });
+    if (res.ok) {
+      fetchTcFiles(currentPath);
+      fetchStatus();
+    }
+  };
+
+  const handleCreateItem = async (newItemData) => {
+    const res = await fetch('http://localhost:3001/api/timecapsule/create-item', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newItemData)
+    });
+    if (res.ok) {
+      fetchTcFiles(currentPath);
+      fetchStatus();
+    }
+  };
+
+  const handleDeleteSelected = async () => {
+    if (!window.confirm(`Tem certeza que deseja excluir ${selectedFiles.length} item(ns) da Time Capsule?`)) return;
+
+    for (const file of selectedFiles) {
+      await fetch(`http://localhost:3001/api/timecapsule/delete-item/${file.id}`, {
+        method: 'DELETE'
+      });
+    }
+    setSelectedFiles([]);
+    fetchTcFiles(currentPath);
+    fetchStatus();
   };
 
   const handleStartOffload = async (targetProvider, actionType) => {
@@ -180,7 +242,7 @@ export function App() {
         onOpenRules={() => setIsRulesOpen(true)}
         onRefresh={() => {
           fetchStatus();
-          fetchTcFiles();
+          fetchTcFiles(currentPath);
           fetchJobs();
         }}
       />
@@ -236,12 +298,17 @@ export function App() {
       {/* Explorer / Offloader Section */}
       <FileBrowser 
         tcFiles={tcFiles}
+        currentPath={currentPath}
+        onNavigatePath={handleNavigatePath}
         cloudProvider="onedrive"
         cloudFiles={cloudFiles}
         selectedFiles={selectedFiles}
         onToggleSelectFile={handleToggleSelectFile}
         onSelectAll={handleSelectAll}
         onStartOffload={handleStartOffload}
+        onOpenFileEditor={handleOpenFileEditor}
+        onOpenNewItemModal={() => setIsNewItemOpen(true)}
+        onDeleteSelected={handleDeleteSelected}
       />
 
       {/* Active Jobs Monitor */}
@@ -264,8 +331,23 @@ export function App() {
         currentConfig={status?.timeCapsule}
         onTestConnection={handleTestConnection}
       />
+
+      <FileEditorModal
+        isOpen={!!editingFile}
+        onClose={() => setEditingFile(null)}
+        file={editingFile}
+        onSaveFile={handleSaveFile}
+      />
+
+      <NewItemModal
+        isOpen={isNewItemOpen}
+        onClose={() => setIsNewItemOpen(false)}
+        currentPath={currentPath}
+        onCreateItem={handleCreateItem}
+      />
     </div>
   );
 }
 
 export default App;
+

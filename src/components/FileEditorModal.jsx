@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, FileText, HardDrive, Download, CategoryIcon } from 'lucide-react';
+import { X, Save, FileText, HardDrive, Download } from 'lucide-react';
 
 export function FileEditorModal({ isOpen, onClose, file, onSaveFile }) {
   const [name, setName] = useState('');

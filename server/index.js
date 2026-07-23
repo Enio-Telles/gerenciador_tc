@@ -68,11 +68,27 @@ app.post('/api/timecapsule/test-connection', async (req, res) => {
 });
 
 // Cloud Providers endpoints
+app.get('/api/cloud/providers', async (req, res) => {
+  const providers = await cloudSyncService.getProvidersStatus();
+  res.json(providers);
+});
+
 app.get('/api/cloud/files', async (req, res) => {
   const provider = req.query.provider || 'gdrive';
   const path = req.query.path || '/';
   const files = await cloudSyncService.listFiles(provider, path);
   res.json(files);
+});
+
+app.post('/api/cloud/connect-gdrive', async (req, res) => {
+  const { account, targetFolder } = req.body;
+  const result = await cloudSyncService.connectGDrive({ account, targetFolder });
+  res.json(result);
+});
+
+app.post('/api/cloud/disconnect/:provider', async (req, res) => {
+  const result = await cloudSyncService.disconnectProvider(req.params.provider);
+  res.json(result);
 });
 
 // Sync & Offload Job Operations
@@ -87,7 +103,7 @@ app.post('/api/jobs/start-offload', async (req, res) => {
     sourceFiles,
     targetProvider,
     targetFolder,
-    actionType: actionType || 'offload' // 'offload' (move and delete from TC) or 'sync' (copy)
+    actionType: actionType || 'offload'
   });
   res.json(newJob);
 });

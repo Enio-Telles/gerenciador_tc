@@ -7,11 +7,13 @@ import { AutoRulesModal } from './components/AutoRulesModal';
 import { TCConfigModal } from './components/TCConfigModal';
 import { FileEditorModal } from './components/FileEditorModal';
 import { NewItemModal } from './components/NewItemModal';
+import { GoogleDriveModal } from './components/GoogleDriveModal';
 
 export function App() {
   const [status, setStatus] = useState(null);
   const [currentPath, setCurrentPath] = useState('/');
   const [tcFiles, setTcFiles] = useState([]);
+  const [cloudProvider, setCloudProvider] = useState('gdrive');
   const [cloudFiles, setCloudFiles] = useState([]);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [jobs, setJobs] = useState([]);
@@ -21,6 +23,7 @@ export function App() {
   const [isRulesOpen, setIsRulesOpen] = useState(false);
   const [isConfigOpen, setIsConfigOpen] = useState(false);
   const [isNewItemOpen, setIsNewItemOpen] = useState(false);
+  const [isGDriveOpen, setIsGDriveOpen] = useState(false);
   const [editingFile, setEditingFile] = useState(null);
 
   const fetchStatus = async () => {
@@ -47,7 +50,7 @@ export function App() {
     }
   };
 
-  const fetchCloudFiles = async (provider = 'onedrive') => {
+  const fetchCloudFiles = async (provider = cloudProvider) => {
     try {
       const res = await fetch(`http://localhost:3001/api/cloud/files?provider=${provider}`);
       if (res.ok) {
@@ -86,7 +89,7 @@ export function App() {
   useEffect(() => {
     fetchStatus();
     fetchTcFiles(currentPath);
-    fetchCloudFiles('onedrive');
+    fetchCloudFiles(cloudProvider);
     fetchJobs();
     fetchRules();
 
@@ -168,7 +171,6 @@ export function App() {
     }
     setSelectedFiles([]);
     fetchTcFiles(currentPath);
-    fetchStatus();
   };
 
   const handleStartOffload = async (targetProvider, actionType) => {
@@ -181,14 +183,12 @@ export function App() {
         body: JSON.stringify({
           sourceFiles: selectedFiles,
           targetProvider,
-          targetFolder: `/${targetProvider === 'onedrive' ? 'OneDrive_TC_Archive' : 'GoogleDrive_BKP'}`,
+          targetFolder: targetProvider === 'gdrive' ? '/GoogleDrive_BKP' : '/OneDrive_TC_Archive',
           actionType
         })
       });
-
       if (res.ok) {
-        const newJob = await res.json();
-        setJobs(prev => [newJob, ...prev]);
+        fetchJobs();
         setSelectedFiles([]);
       }
     } catch (e) {
@@ -233,6 +233,37 @@ export function App() {
     }
   };
 
+  const handleConnectGDrive = async ({ account, targetFolder }) => {
+    try {
+      const res = await fetch('http://localhost:3001/api/cloud/connect-gdrive', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ account, targetFolder })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        fetchStatus();
+        fetchCloudFiles('gdrive');
+        return data;
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    return { success: false };
+  };
+
+  const handleDisconnectGDrive = async (provider) => {
+    try {
+      await fetch(`http://localhost:3001/api/cloud/disconnect/${provider}`, {
+        method: 'POST'
+      });
+      fetchStatus();
+      fetchCloudFiles(cloudProvider);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   return (
     <div className="app-container">
       {/* Header Bar */}
@@ -240,9 +271,11 @@ export function App() {
         status={status}
         onOpenConfig={() => setIsConfigOpen(true)}
         onOpenRules={() => setIsRulesOpen(true)}
+        onOpenGDrive={() => setIsGDriveOpen(true)}
         onRefresh={() => {
           fetchStatus();
           fetchTcFiles(currentPath);
+          fetchCloudFiles(cloudProvider);
           fetchJobs();
         }}
       />
@@ -275,6 +308,16 @@ export function App() {
         />
 
         <DiskMeterCard 
+          type="gdrive"
+          title="Google Drive"
+          subtitle={`Conta: ${status?.cloudProviders?.gdrive?.account || 'enio.telles@gmail.com'}`}
+          totalGB={status?.cloudProviders?.gdrive?.totalGB || 200}
+          usedGB={status?.cloudProviders?.gdrive?.usedGB || 84.2}
+          freeGB={status?.cloudProviders?.gdrive?.freeGB || 115.8}
+          percentUsed={status?.cloudProviders?.gdrive?.percentUsed || 42.1}
+        />
+
+        <DiskMeterCard 
           type="onedrive"
           title="Microsoft OneDrive"
           subtitle="Conta Microsoft (1.0 TB Cloud)"
@@ -283,16 +326,6 @@ export function App() {
           freeGB={status?.cloudProviders?.onedrive?.freeGB || 689.5}
           percentUsed={status?.cloudProviders?.onedrive?.percentUsed || 31.1}
         />
-
-        <DiskMeterCard 
-          type="gdrive"
-          title="Google Drive"
-          subtitle="Conta Google (200 GB Cloud)"
-          totalGB={status?.cloudProviders?.gdrive?.totalGB || 200}
-          usedGB={status?.cloudProviders?.gdrive?.usedGB || 84.2}
-          freeGB={status?.cloudProviders?.gdrive?.freeGB || 115.8}
-          percentUsed={status?.cloudProviders?.gdrive?.percentUsed || 42.1}
-        />
       </div>
 
       {/* Explorer / Offloader Section */}
@@ -300,8 +333,12 @@ export function App() {
         tcFiles={tcFiles}
         currentPath={currentPath}
         onNavigatePath={handleNavigatePath}
-        cloudProvider="onedrive"
+        cloudProvider={cloudProvider}
         cloudFiles={cloudFiles}
+        onSelectCloudProvider={(p) => {
+          setCloudProvider(p);
+          fetchCloudFiles(p);
+        }}
         selectedFiles={selectedFiles}
         onToggleSelectFile={handleToggleSelectFile}
         onSelectAll={handleSelectAll}
@@ -332,6 +369,14 @@ export function App() {
         onTestConnection={handleTestConnection}
       />
 
+      <GoogleDriveModal 
+        isOpen={isGDriveOpen}
+        onClose={() => setIsGDriveOpen(false)}
+        gdriveStatus={status?.cloudProviders?.gdrive}
+        onConnectGDrive={handleConnectGDrive}
+        onDisconnectGDrive={handleDisconnectGDrive}
+      />
+
       <FileEditorModal
         isOpen={!!editingFile}
         onClose={() => setEditingFile(null)}
@@ -350,4 +395,3 @@ export function App() {
 }
 
 export default App;
-

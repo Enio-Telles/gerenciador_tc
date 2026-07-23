@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
 import { 
-  Folder, File, HardDrive, Cloud, CheckSquare, Square, 
-  DownloadCloud, Trash2, ArrowUpRight, Plus, Edit3, ArrowLeft, Eye, FolderOpen, ChevronRight, FileText
+  Folder, HardDrive, Cloud, CheckSquare, Square, 
+  DownloadCloud, Trash2, ArrowUpRight, Plus, ArrowLeft, Eye, FolderOpen, ChevronRight, FileText
 } from 'lucide-react';
 
 export function FileBrowser({ 
   tcFiles, 
   currentPath,
   onNavigatePath,
-  cloudProvider, 
-  cloudFiles, 
+  cloudProvider = 'gdrive', 
+  cloudFiles = [], 
+  onSelectCloudProvider,
   selectedFiles, 
   onToggleSelectFile, 
   onSelectAll, 
@@ -18,7 +19,7 @@ export function FileBrowser({
   onOpenNewItemModal,
   onDeleteSelected
 }) {
-  const [selectedTargetCloud, setSelectedTargetCloud] = useState('onedrive');
+  const [selectedTargetCloud, setSelectedTargetCloud] = useState(cloudProvider);
 
   const isAllSelected = tcFiles.length > 0 && selectedFiles.length === tcFiles.length;
 
@@ -36,6 +37,13 @@ export function FileBrowser({
     parts.pop();
     const parent = parts.length === 0 ? '/' : '/' + parts.join('/');
     onNavigatePath(parent);
+  };
+
+  const handleSwitchCloud = (provider) => {
+    setSelectedTargetCloud(provider);
+    if (onSelectCloudProvider) {
+      onSelectCloudProvider(provider);
+    }
   };
 
   // Helper to build clickable breadcrumbs
@@ -250,36 +258,43 @@ export function FileBrowser({
 
           <div style={{ display: 'flex', gap: '8px' }}>
             <button 
+              className={`btn ${selectedTargetCloud === 'gdrive' ? 'btn-success' : 'btn-secondary'}`}
+              onClick={() => handleSwitchCloud('gdrive')}
+              style={{ padding: '6px 12px', fontSize: '13px', background: selectedTargetCloud === 'gdrive' ? '#34a853' : undefined, borderColor: selectedTargetCloud === 'gdrive' ? '#34a853' : undefined, color: selectedTargetCloud === 'gdrive' ? '#fff' : undefined }}
+            >
+              Google Drive (200 GB)
+            </button>
+            <button 
               className={`btn ${selectedTargetCloud === 'onedrive' ? 'btn-primary' : 'btn-secondary'}`}
-              onClick={() => setSelectedTargetCloud('onedrive')}
+              onClick={() => handleSwitchCloud('onedrive')}
               style={{ padding: '6px 12px', fontSize: '13px' }}
             >
               OneDrive (1 TB)
-            </button>
-            <button 
-              className={`btn ${selectedTargetCloud === 'gdrive' ? 'btn-success' : 'btn-secondary'}`}
-              onClick={() => setSelectedTargetCloud('gdrive')}
-              style={{ padding: '6px 12px', fontSize: '13px' }}
-            >
-              Google Drive (200 GB)
             </button>
           </div>
         </div>
 
         <div className="file-list">
           <div style={{ padding: '12px', fontSize: '13px', color: 'var(--text-muted)', textAlign: 'center' }}>
-            Pasta de Destino na Nuvem: <strong>/{selectedTargetCloud === 'onedrive' ? 'OneDrive_TC_Archive' : 'GoogleDrive_BKP'}</strong>
+            Pasta de Destino na Nuvem: <strong>/{selectedTargetCloud === 'gdrive' ? 'GoogleDrive_BKP' : 'OneDrive_TC_Archive'}</strong>
           </div>
           
           {cloudFiles.map((item) => (
             <div key={item.id} className="file-item" style={{ cursor: 'default' }}>
-              <div className="file-info">
-                <Folder size={18} color={selectedTargetCloud === 'gdrive' ? '#34a853' : '#0078d4'} />
+              <div className="file-info" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                {item.type === 'directory' ? (
+                  <Folder size={18} color={selectedTargetCloud === 'gdrive' ? '#34a853' : '#0078d4'} />
+                ) : (
+                  <FileText size={18} color="#94a3b8" />
+                )}
                 <div>
-                  <div className="file-name">{item.name}</div>
-                  <div className="file-meta">Pasta na nuvem</div>
+                  <div className="file-name" style={{ fontWeight: '500' }}>{item.name}</div>
+                  <div className="file-meta">{item.sizeFormatted || 'Pasta na nuvem'} {item.modified ? `• Modificado ${item.modified}` : ''}</div>
                 </div>
               </div>
+              <span className="badge" style={{ background: 'rgba(255,255,255,0.05)', fontSize: '11px' }}>
+                {selectedTargetCloud === 'gdrive' ? 'Google Drive' : 'OneDrive'}
+              </span>
             </div>
           ))}
         </div>

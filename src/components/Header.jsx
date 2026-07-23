@@ -1,8 +1,9 @@
 import React from 'react';
-import { HardDrive, CloudUpload, ShieldCheck, RefreshCw, Settings, Sliders } from 'lucide-react';
+import { HardDrive, ShieldCheck, RefreshCw, Settings, Sliders, Cloud } from 'lucide-react';
 
-export function Header({ status, onOpenConfig, onOpenRules, onRefresh }) {
-  const isConnected = status?.timeCapsule?.connected;
+export function Header({ status, onOpenConfig, onOpenRules, onOpenGDrive, onRefresh }) {
+  const isTcConnected = status?.timeCapsule?.connected;
+  const isGDriveConnected = status?.cloudProviders?.gdrive?.status === 'connected';
 
   return (
     <header className="glass-panel app-header">
@@ -16,15 +17,25 @@ export function Header({ status, onOpenConfig, onOpenRules, onRefresh }) {
         </div>
       </div>
 
-      <div className="header-actions">
-        <span className={`badge ${isConnected ? 'badge-tc' : 'badge-warning'}`}>
+      <div className="header-actions" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+        <span className={`badge ${isTcConnected ? 'badge-tc' : 'badge-warning'}`}>
           <ShieldCheck size={14} />
-          {isConnected ? `Time Capsule Conectada (${status?.timeCapsule?.ip})` : 'Desconectada'}
+          {isTcConnected ? `TC Conectada (${status?.timeCapsule?.ip})` : 'Desconectada'}
         </span>
+
+        <button 
+          className="btn btn-secondary" 
+          onClick={onOpenGDrive} 
+          title="Conectar ou configurar conta do Google Drive"
+          style={{ borderColor: isGDriveConnected ? 'rgba(52, 168, 83, 0.4)' : 'var(--border-color)', color: isGDriveConnected ? '#34a853' : 'inherit' }}
+        >
+          <Cloud size={16} color={isGDriveConnected ? '#34a853' : '#94a3b8'} />
+          {isGDriveConnected ? 'Google Drive (Conectado)' : 'Conectar Google Drive'}
+        </button>
 
         <button className="btn btn-secondary" onClick={onOpenRules} title="Regras de Agendamento">
           <Sliders size={16} />
-          Regras de Auto-Offload
+          Regras
         </button>
 
         <button className="btn btn-secondary" onClick={onOpenConfig} title="Configurações SMB / IP">

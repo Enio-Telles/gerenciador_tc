@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   Folder, File, HardDrive, Cloud, CheckSquare, Square, 
-  DownloadCloud, Trash2, ArrowUpRight, Plus, Edit3, ArrowLeft, Eye, FolderOpen, ChevronRight
+  DownloadCloud, Trash2, ArrowUpRight, Plus, Edit3, ArrowLeft, Eye, FolderOpen, ChevronRight, FileText
 } from 'lucide-react';
 
 export function FileBrowser({ 
@@ -112,10 +112,10 @@ export function FileBrowser({
               <button 
                 className="btn btn-secondary"
                 onClick={() => onOpenFileEditor(selectedFiles[0])}
-                title="Visualizar ou editar conteúdo do arquivo selecionado"
+                title="Abrir e visualizar conteúdo do arquivo selecionado"
                 style={{ padding: '6px 10px', fontSize: '12px' }}
               >
-                <Edit3 size={14} /> Editar
+                <FileText size={14} /> Abrir Conteúdo
               </button>
             )}
 
@@ -172,7 +172,8 @@ export function FileBrowser({
                 <div 
                   key={file.id} 
                   className={`file-item ${isSelected ? 'selected' : ''}`}
-                  onDoubleClick={() => handleFolderClick(file)}
+                  onClick={() => handleFolderClick(file)}
+                  style={{ cursor: 'pointer' }}
                 >
                   <div 
                     className="file-info"
@@ -190,16 +191,12 @@ export function FileBrowser({
                     </div>
 
                     <div 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleFolderClick(file);
-                      }}
-                      style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', flex: 1 }}
-                      title={isDir ? `Clique para abrir a pasta ${file.name}` : `Clique para editar o arquivo ${file.name}`}
+                      style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}
+                      title={isDir ? `Clique para abrir a pasta ${file.name}` : `Clique para abrir o conteúdo de ${file.name}`}
                     >
-                      {isDir ? <FolderOpen size={18} color="#38bdf8" /> : <File size={18} color="#94a3b8" />}
+                      {isDir ? <FolderOpen size={18} color="#38bdf8" /> : <FileText size={18} color="#a855f7" />}
                       <div>
-                        <div className="file-name" style={{ color: isDir ? '#38bdf8' : 'inherit', fontWeight: isDir ? '600' : 'normal' }}>
+                        <div className="file-name" style={{ color: isDir ? '#38bdf8' : 'inherit', fontWeight: isDir ? '600' : '500' }}>
                           {file.name}
                         </div>
                         <div className="file-meta">{file.sizeFormatted} • Modificado em {file.modified}</div>
@@ -213,19 +210,26 @@ export function FileBrowser({
                     {isDir ? (
                       <button 
                         className="btn btn-secondary"
-                        onClick={() => handleFolderClick(file)}
-                        style={{ padding: '4px 8px', fontSize: '11px', gap: '4px' }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleFolderClick(file);
+                        }}
+                        style={{ padding: '4px 10px', fontSize: '12px', gap: '4px' }}
                         title="Abrir conteúdo da pasta"
                       >
-                        <FolderOpen size={12} color="#38bdf8" /> Abrir Pasta
+                        <FolderOpen size={13} color="#38bdf8" /> Abrir Pasta
                       </button>
                     ) : (
                       <button 
-                        className="btn-icon" 
-                        onClick={() => onOpenFileEditor(file)}
-                        title="Abrir editor / detalhes"
+                        className="btn btn-secondary" 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onOpenFileEditor(file);
+                        }}
+                        style={{ padding: '4px 10px', fontSize: '12px', gap: '4px', color: '#a855f7', borderColor: 'rgba(168, 85, 247, 0.3)' }}
+                        title="Abrir e visualizar conteúdo do arquivo"
                       >
-                        <Eye size={14} color="#94a3b8" />
+                        <Eye size={13} color="#a855f7" /> Abrir Conteúdo
                       </button>
                     )}
                   </div>

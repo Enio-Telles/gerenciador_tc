@@ -76,9 +76,13 @@ app.post('/api/timecapsule/mount-linux', async (req, res) => {
 app.post('/api/windows/open-folder', (req, res) => {
   const { folderPath } = req.body;
   const target = folderPath || '/mnt/windows';
+  const env = { ...process.env, DISPLAY: process.env.DISPLAY || ':0', XDG_RUNTIME_DIR: process.env.XDG_RUNTIME_DIR || '/run/user/1000' };
+
   import('child_process').then(({ exec }) => {
-    exec(`xdg-open "${target}"`, (err) => {
-      if (err) return res.status(500).json({ success: false, message: err.message });
+    exec(`xdg-open "${target}" || gio open "${target}" || nautilus "${target}"`, { env }, (err) => {
+      if (err) {
+        return res.status(500).json({ success: false, message: `Erro ao abrir: ${err.message}` });
+      }
       res.json({ success: true, message: `Pasta ${target} aberta no gerenciador de arquivos!` });
     });
   });
@@ -94,7 +98,13 @@ app.get('/api/windows/partitions', (req, res) => {
           let ntfsList = [];
           for (const dev of devices || []) {
             if (dev.fstype === 'ntfs' || (dev.mountpoints && dev.mountpoints.some(m => m && m.includes('windows')))) {
-              ntfsList.push(dev);
+              ntfsList.push({
+                name: `/dev/${dev.name}`,
+                fstype: dev.fstype || 'ntfs',
+                label: dev.label || 'Partição Windows',
+                size: dev.size,
+                mountpoints: dev.mountpoints || ['/mnt/windows']
+              });
             }
             if (dev.children) {
               ntfsList = ntfsList.concat(findNtfs(dev.children));
@@ -103,7 +113,7 @@ app.get('/api/windows/partitions', (req, res) => {
           return ntfsList;
         };
         const partitions = findNtfs(data.blockdevices);
-        res.json({ success: true, partitions, raw: data.blockdevices });
+        res.json({ success: true, partitions });
       } catch (e) {
         res.json({ success: false, partitions: [], error: e.message });
       }
@@ -112,11 +122,15 @@ app.get('/api/windows/partitions', (req, res) => {
 });
 
 app.post('/api/windows/open-disks', (req, res) => {
+  const env = { ...process.env, DISPLAY: process.env.DISPLAY || ':0', XDG_RUNTIME_DIR: process.env.XDG_RUNTIME_DIR || '/run/user/1000' };
+
   import('child_process').then(({ exec }) => {
-    exec('gnome-disks', (err) => {
-      if (err) return res.status(500).json({ success: false, message: err.message });
+    exec('gnome-disks', { env }, (err) => {
+      if (err) {
+        return res.status(500).json({ success: false, message: err.message });
+      }
     });
-    res.json({ success: true, message: 'GNOME Disks iniciado!' });
+    res.json({ success: true, message: 'Gerenciador de Discos (GNOME Disks) iniciado!' });
   });
 });
 

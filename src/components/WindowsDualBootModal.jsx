@@ -37,18 +37,27 @@ export function WindowsDualBootModal({ isOpen, onClose }) {
         body: JSON.stringify({ folderPath })
       });
       const data = await res.json();
-      setMessage(data.message || 'Pasta aberta!');
-      setTimeout(() => setMessage(''), 3000);
+      if (res.ok && data.success) {
+        setMessage(data.message || 'Pasta aberta no gerenciador de arquivos!');
+      } else {
+        setMessage(data.message || 'Erro ao abrir pasta');
+      }
+      setTimeout(() => setMessage(''), 4000);
     } catch (e) {
-      setMessage('Erro ao abrir pasta');
+      setMessage('Erro de comunicação com o servidor');
     }
   };
 
   const handleOpenDisks = async () => {
     try {
-      await fetch('http://localhost:3001/api/windows/open-disks', { method: 'POST' });
-      setMessage('Gerenciador de Discos (GNOME Disks) aberto com sucesso!');
-      setTimeout(() => setMessage(''), 3000);
+      const res = await fetch('http://localhost:3001/api/windows/open-disks', { method: 'POST' });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setMessage('Gerenciador de Discos (GNOME Disks) aberto com sucesso!');
+      } else {
+        setMessage(data.message || 'Erro ao abrir GNOME Disks');
+      }
+      setTimeout(() => setMessage(''), 4000);
     } catch (e) {
       setMessage('Erro ao abrir GNOME Disks');
     }

@@ -72,14 +72,17 @@ class MultiManagerApp:
 
         self.tab_tc = tk.Frame(self.notebook, bg=self.bg_color)
         self.tab_win = tk.Frame(self.notebook, bg=self.bg_color)
+        self.tab_gdrive = tk.Frame(self.notebook, bg=self.bg_color)
         self.tab_partition = tk.Frame(self.notebook, bg=self.bg_color)
 
         self.notebook.add(self.tab_tc, text="📡 Time Capsule")
-        self.notebook.add(self.tab_win, text="🪟 Pastas Windows Dual-Boot")
+        self.notebook.add(self.tab_win, text="🪟 Pastas Windows")
+        self.notebook.add(self.tab_gdrive, text="☁️ Google Drive")
         self.notebook.add(self.tab_partition, text="💽 Partições NTFS")
 
         self.setup_tab_tc()
         self.setup_tab_win()
+        self.setup_tab_gdrive()
         self.setup_tab_partition()
 
         self.check_connection_async()
@@ -227,6 +230,90 @@ class MultiManagerApp:
             cursor="hand2"
         )
         btn_open_win_user.pack(fill="x", pady=4)
+
+    # --- ABA 3: GOOGLE DRIVE ---
+    def setup_tab_gdrive(self):
+        card = tk.Frame(self.tab_gdrive, bg=self.card_bg, bd=1, relief="solid", highlightbackground="#334155")
+        card.pack(fill="both", expand=True, padx=10, pady=10)
+
+        title = tk.Label(card, text="☁️ Conectar e Acessar o Google Drive", font=("Inter", 14, "bold"), bg=self.card_bg, fg="#34A853")
+        title.pack(anchor="w", padx=15, pady=(15, 5))
+
+        desc_text = (
+            "No Ubuntu você pode acessar seu Google Drive de 3 formas:\n\n"
+            "1. 👤 Contas Online do Ubuntu (Nativo): Integra seu Google Drive direto no Gerenciador de Arquivos (Nautilus).\n"
+            "2. 🌐 Navegador Web: Acessa o Google Drive diretamente via web.\n"
+            "3. ⚡ RClone / Gerenciador TC: Permite sincronizar e desafogar arquivos da Time Capsule direto para o Drive."
+        )
+
+        desc = tk.Label(
+            card, 
+            text=desc_text,
+            font=("Inter", 10), 
+            bg=self.card_bg, 
+            fg=self.text_color,
+            justify="left",
+            wraplength=540
+        )
+        desc.pack(anchor="w", padx=15, pady=10)
+
+        btn_frame = tk.Frame(card, bg=self.card_bg, padx=15, pady=10)
+        btn_frame.pack(fill="x")
+
+        btn_online_accounts = tk.Button(
+            btn_frame,
+            text="🔑 CONECTAR CONTA GOOGLE NO UBUNTU (CONTAS ONLINE)",
+            command=self.open_gnome_online_accounts,
+            bg="#34A853",
+            fg="white",
+            font=("Inter", 10, "bold"),
+            relief="flat",
+            pady=10,
+            cursor="hand2"
+        )
+        btn_online_accounts.pack(fill="x", pady=4)
+
+        btn_open_web_gdrive = tk.Button(
+            btn_frame,
+            text="🌐 ABRIR GOOGLE DRIVE NO NAVEGADOR WEB",
+            command=self.open_gdrive_web,
+            bg="#38bdf8",
+            fg="#0f172a",
+            font=("Inter", 10, "bold"),
+            relief="flat",
+            pady=8,
+            cursor="hand2"
+        )
+        btn_open_web_gdrive.pack(fill="x", pady=4)
+
+        btn_open_rclone = tk.Button(
+            btn_frame,
+            text="⚡ CONFIGURAR RCLONE / DRIVE VIA TERMINAL",
+            command=self.open_rclone_config,
+            bg="#334155",
+            fg="white",
+            font=("Inter", 10, "bold"),
+            relief="flat",
+            pady=8,
+            cursor="hand2"
+        )
+        btn_open_rclone.pack(fill="x", pady=4)
+
+    def open_gnome_online_accounts(self):
+        try:
+            subprocess.Popen(["gnome-control-center", "online-accounts"])
+        except Exception as e:
+            messagebox.showerror("Erro", f"Não foi possível abrir as configurações: {e}")
+
+    def open_gdrive_web(self):
+        import webbrowser
+        webbrowser.open("https://drive.google.com")
+
+    def open_rclone_config(self):
+        try:
+            subprocess.Popen(["gnome-terminal", "--", "rclone", "config"])
+        except Exception as e:
+            messagebox.showerror("Erro", f"Falha ao abrir terminal: {e}")
 
     # --- ABA 3: CRIAR / GERENCIAR PARTIÇÕES NTFS ---
     def setup_tab_partition(self):

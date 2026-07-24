@@ -8,6 +8,7 @@ import { TCConfigModal } from './components/TCConfigModal';
 import { FileEditorModal } from './components/FileEditorModal';
 import { NewItemModal } from './components/NewItemModal';
 import { GoogleDriveModal } from './components/GoogleDriveModal';
+import { WindowsDualBootModal } from './components/WindowsDualBootModal';
 
 export function App() {
   const [status, setStatus] = useState(null);
@@ -24,6 +25,7 @@ export function App() {
   const [isConfigOpen, setIsConfigOpen] = useState(false);
   const [isNewItemOpen, setIsNewItemOpen] = useState(false);
   const [isGDriveOpen, setIsGDriveOpen] = useState(false);
+  const [isWindowsOpen, setIsWindowsOpen] = useState(false);
   const [editingFile, setEditingFile] = useState(null);
 
   const fetchStatus = async () => {
@@ -272,6 +274,7 @@ export function App() {
         onOpenConfig={() => setIsConfigOpen(true)}
         onOpenRules={() => setIsRulesOpen(true)}
         onOpenGDrive={() => setIsGDriveOpen(true)}
+        onOpenWindows={() => setIsWindowsOpen(true)}
         onRefresh={() => {
           fetchStatus();
           fetchTcFiles(currentPath);
@@ -375,6 +378,11 @@ export function App() {
         gdriveStatus={status?.cloudProviders?.gdrive}
         onConnectGDrive={handleConnectGDrive}
         onDisconnectGDrive={handleDisconnectGDrive}
+      />
+
+      <WindowsDualBootModal
+        isOpen={isWindowsOpen}
+        onClose={() => setIsWindowsOpen(false)}
       />
 
       <FileEditorModal

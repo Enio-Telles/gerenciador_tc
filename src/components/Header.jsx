@@ -1,7 +1,7 @@
 import React from 'react';
 import { HardDrive, ShieldCheck, RefreshCw, Settings, Sliders, Cloud } from 'lucide-react';
 
-export function Header({ status, onOpenConfig, onOpenRules, onOpenGDrive, onRefresh }) {
+export function Header({ status, onOpenConfig, onOpenRules, onOpenGDrive, onOpenWindows, onRefresh }) {
   const isTcConnected = status?.timeCapsule?.connected;
   const isGDriveConnected = status?.cloudProviders?.gdrive?.status === 'connected';
 
@@ -13,7 +13,7 @@ export function Header({ status, onOpenConfig, onOpenRules, onOpenGDrive, onRefr
         </div>
         <div className="brand-title">
           <h1>Gerenciador Time Capsule A1409</h1>
-          <p>Sincronização direta Time Capsule ↔ Google Drive / OneDrive & Desafogamento do HD Local</p>
+          <p>Sincronização direta Time Capsule ↔ Google Drive / OneDrive & Dual-Boot Windows</p>
         </div>
       </div>
 
@@ -25,12 +25,22 @@ export function Header({ status, onOpenConfig, onOpenRules, onOpenGDrive, onRefr
 
         <button 
           className="btn btn-secondary" 
+          onClick={onOpenWindows}
+          title="Acessar pastas do Windows Dual-Boot e partições NTFS"
+          style={{ borderColor: '#38bdf8', color: '#38bdf8' }}
+        >
+          <HardDrive size={16} color="#38bdf8" />
+          Windows Dual-Boot
+        </button>
+
+        <button 
+          className="btn btn-secondary" 
           onClick={onOpenGDrive} 
           title="Conectar ou configurar conta do Google Drive"
           style={{ borderColor: isGDriveConnected ? 'rgba(52, 168, 83, 0.4)' : 'var(--border-color)', color: isGDriveConnected ? '#34a853' : 'inherit' }}
         >
           <Cloud size={16} color={isGDriveConnected ? '#34a853' : '#94a3b8'} />
-          {isGDriveConnected ? 'Google Drive (Conectado)' : 'Conectar Google Drive'}
+          {isGDriveConnected ? 'Google Drive' : 'Conectar Drive'}
         </button>
 
         <button className="btn btn-secondary" onClick={onOpenRules} title="Regras de Agendamento">

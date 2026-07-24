@@ -72,6 +72,54 @@ app.post('/api/timecapsule/mount-linux', async (req, res) => {
   res.json(result);
 });
 
+// Windows Dual-Boot & NTFS Partition endpoints
+app.post('/api/windows/open-folder', (req, res) => {
+  const { folderPath } = req.body;
+  const target = folderPath || '/mnt/windows';
+  import('child_process').then(({ exec }) => {
+    exec(`xdg-open "${target}"`, (err) => {
+      if (err) return res.status(500).json({ success: false, message: err.message });
+      res.json({ success: true, message: `Pasta ${target} aberta no gerenciador de arquivos!` });
+    });
+  });
+});
+
+app.get('/api/windows/partitions', (req, res) => {
+  import('child_process').then(({ exec }) => {
+    exec('lsblk -J -f -o NAME,FSTYPE,LABEL,SIZE,MOUNTPOINTS', (err, stdout) => {
+      if (err) return res.json({ success: false, partitions: [] });
+      try {
+        const data = JSON.parse(stdout);
+        const findNtfs = (devices) => {
+          let ntfsList = [];
+          for (const dev of devices || []) {
+            if (dev.fstype === 'ntfs' || (dev.mountpoints && dev.mountpoints.some(m => m && m.includes('windows')))) {
+              ntfsList.push(dev);
+            }
+            if (dev.children) {
+              ntfsList = ntfsList.concat(findNtfs(dev.children));
+            }
+          }
+          return ntfsList;
+        };
+        const partitions = findNtfs(data.blockdevices);
+        res.json({ success: true, partitions, raw: data.blockdevices });
+      } catch (e) {
+        res.json({ success: false, partitions: [], error: e.message });
+      }
+    });
+  });
+});
+
+app.post('/api/windows/open-disks', (req, res) => {
+  import('child_process').then(({ exec }) => {
+    exec('gnome-disks', (err) => {
+      if (err) return res.status(500).json({ success: false, message: err.message });
+    });
+    res.json({ success: true, message: 'GNOME Disks iniciado!' });
+  });
+});
+
 
 // Cloud Providers endpoints
 app.get('/api/cloud/providers', async (req, res) => {

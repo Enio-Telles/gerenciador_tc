@@ -405,15 +405,27 @@ class MultiManagerApp:
         ip = self.ent_ip.get().strip()
         share = self.ent_share.get().strip()
         user = self.ent_user.get().strip()
+        password = self.ent_pass.get().strip()
 
         env = dict(os.environ, DISPLAY=os.environ.get('DISPLAY', ':0'), XDG_RUNTIME_DIR=os.environ.get('XDG_RUNTIME_DIR', '/run/user/1000'))
-        url = f"smb://{user}@{ip}/{share}"
+        
+        from urllib.parse import quote_plus
+        encoded_pass = quote_plus(password) if password else ""
+        
+        if user and encoded_pass:
+            auth_url = f"smb://{user}:{encoded_pass}@{ip}/{share}"
+        elif encoded_pass:
+            auth_url = f"smb://:{encoded_pass}@{ip}/{share}"
+        elif user:
+            auth_url = f"smb://{user}@{ip}/{share}"
+        else:
+            auth_url = f"smb://{ip}/{share}"
 
         uid = os.getuid()
         gvfs_path = f"/run/user/{uid}/gvfs/smb-share:server={ip},share={share.lower()}"
         alt_gvfs_path = f"/run/user/{uid}/gvfs/smb-share:server={ip},share={share}"
 
-        target = gvfs_path if os.path.exists(gvfs_path) else (alt_gvfs_path if os.path.exists(alt_gvfs_path) else url)
+        target = gvfs_path if os.path.exists(gvfs_path) else (alt_gvfs_path if os.path.exists(alt_gvfs_path) else auth_url)
         
         try:
             subprocess.Popen(["nautilus", target], env=env)
@@ -432,15 +444,20 @@ class MultiManagerApp:
         self.config.update({'ip': ip, 'shareName': share, 'username': user, 'password': password})
         save_config(self.config)
 
-        url = f"smb://{user}@{ip}/{share}"
         env = dict(os.environ, DISPLAY=os.environ.get('DISPLAY', ':0'), XDG_RUNTIME_DIR=os.environ.get('XDG_RUNTIME_DIR', '/run/user/1000'))
 
-        try:
-            subprocess.run(["gio", "mount", "-u", url], capture_output=True)
-            proc = subprocess.Popen(["gio", "mount", url], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-            proc.communicate(input=f"{password}\nWORKGROUP\n")
+        from urllib.parse import quote_plus
+        encoded_pass = quote_plus(password) if password else ""
 
-            # Abertura direta e imediata da janela do Nautilus
+        url = f"smb://{user}@{ip}/{share}" if user else f"smb://{ip}/{share}"
+        auth_url = f"smb://{user}:{encoded_pass}@{ip}/{share}" if (user and encoded_pass) else (f"smb://:{encoded_pass}@{ip}/{share}" if encoded_pass else url)
+
+        try:
+            # Tenta montagem via gio mount desfazendo montagens prévias
+            subprocess.run(["gio", "mount", "-u", url], capture_output=True, env=env)
+            subprocess.run(["gio", "mount", auth_url], capture_output=True, env=env)
+
+            # Abre a janela do gerenciador de arquivos (Nautilus) diretamente
             self.open_tc_folder()
         except Exception as e:
             messagebox.showerror("Erro", f"Falha na montagem: {e}")

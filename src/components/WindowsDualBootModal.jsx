@@ -173,8 +173,7 @@ export function WindowsDualBootModal({ isOpen, onClose }) {
               <span>Livre: {diskSpace.free}</span>
             </div>
           </div>
-        )}>
-        </div>
+        )}
 
         {/* Action Message */}
         {message && (

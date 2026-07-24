@@ -375,11 +375,22 @@ class MultiManagerApp:
     # --- LÓGICA & AUXILIARES ---
     def scan_ntfs_partitions(self):
         try:
+            res_df = subprocess.run(["df", "-h", "/mnt/windows"], capture_output=True, text=True)
+            space_info = ""
+            if res_df.returncode == 0:
+                df_lines = res_df.stdout.strip().split('\n')
+                if len(df_lines) >= 2:
+                    parts = df_lines[1].split()
+                    if len(parts) >= 5:
+                        space_info = f"💾 Espaço Livre em C: ({parts[0]}):\n   🟢 Disponível: {parts[3]}  |  Usado: {parts[2]} de {parts[1]} ({parts[4]})\n\n"
+
             res = subprocess.run(["lsblk", "-f", "-o", "NAME,FSTYPE,LABEL,MOUNTPOINTS"], capture_output=True, text=True)
             lines = res.stdout.split('\n')
             ntfs_lines = [l for l in lines if 'ntfs' in l.lower() or 'mnt' in l.lower() or 'nvme' in l.lower()]
+            
             self.txt_partitions.delete("1.0", tk.END)
-            self.txt_partitions.insert(tk.END, "\n".join(ntfs_lines) if ntfs_lines else "Nenhuma partição NTFS detectada.")
+            full_text = space_info + "Partições no Disco:\n" + ("\n".join(ntfs_lines) if ntfs_lines else "Nenhuma partição NTFS detectada.")
+            self.txt_partitions.insert(tk.END, full_text)
         except Exception as e:
             self.txt_partitions.insert(tk.END, f"Erro ao listar partições: {e}")
 

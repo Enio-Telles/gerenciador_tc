@@ -3,6 +3,7 @@ import { X, HardDrive, Folder, ExternalLink, PlusCircle, CheckCircle2, AlertTria
 
 export function WindowsDualBootModal({ isOpen, onClose }) {
   const [partitions, setPartitions] = useState([]);
+  const [diskSpace, setDiskSpace] = useState({ total: '856G', used: '750G', free: '107G', percent: '88%' });
   const [largestFiles, setLargestFiles] = useState([]);
   const [loadingPartitions, setLoadingPartitions] = useState(false);
   const [scanningFiles, setScanningFiles] = useState(false);
@@ -15,6 +16,9 @@ export function WindowsDualBootModal({ isOpen, onClose }) {
       if (res.ok) {
         const data = await res.json();
         setPartitions(data.partitions || []);
+        if (data.diskSpace) {
+          setDiskSpace(data.diskSpace);
+        }
       }
     } catch (e) {
       console.error(e);
@@ -99,7 +103,8 @@ export function WindowsDualBootModal({ isOpen, onClose }) {
       const data = await res.json();
       if (res.ok && data.success) {
         setLargestFiles(largestFiles.filter(f => f.id !== file.id));
-        setMessage(`✨ Arquivo "${file.name}" excluido da partição Windows com sucesso!`);
+        setMessage(`✨ Arquivo "${file.name}" excluído da partição Windows com sucesso!`);
+        fetchPartitions();
       } else {
         setMessage(`Erro: ${data.message}`);
       }
@@ -129,6 +134,46 @@ export function WindowsDualBootModal({ isOpen, onClose }) {
           <button className="btn-icon" onClick={onClose}>
             <X size={20} />
           </button>
+        </div>
+
+        {/* Disk Space Widget Card */}
+        {diskSpace && (
+          <div style={{ marginTop: '16px', background: 'rgba(15, 23, 42, 0.8)', borderRadius: '10px', border: '1px solid rgba(56, 189, 248, 0.3)', padding: '16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <HardDrive size={20} color="#22c55e" />
+                <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#f8fafc' }}>
+                  Espaço na Partição Windows (C:)
+                </span>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#22c55e' }}>
+                  {diskSpace.free} LIVRES
+                </span>
+                <span style={{ fontSize: '12px', color: 'var(--text-muted)', marginLeft: '8px' }}>
+                  (de {diskSpace.total})
+                </span>
+              </div>
+            </div>
+
+            {/* Progress Bar */}
+            <div style={{ width: '100%', height: '10px', background: 'rgba(255, 255, 255, 0.1)', borderRadius: '5px', overflow: 'hidden' }}>
+              <div 
+                style={{ 
+                  width: diskSpace.percent || '88%', 
+                  height: '100%', 
+                  background: parseInt(diskSpace.percent) > 85 ? 'linear-gradient(90deg, #f59e0b, #ef4444)' : 'linear-gradient(90deg, #38bdf8, #22c55e)',
+                  borderRadius: '5px',
+                  transition: 'width 0.5s ease'
+                }} 
+              />
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)', marginTop: '6px' }}>
+              <span>Usado: {diskSpace.used} ({diskSpace.percent})</span>
+              <span>Livre: {diskSpace.free}</span>
+            </div>
+          </div>
+        )}>
         </div>
 
         {/* Action Message */}

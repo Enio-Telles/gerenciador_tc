@@ -159,6 +159,19 @@ class MultiManagerApp:
         )
         self.btn_mount.pack(fill="x", pady=4)
 
+        self.btn_open_direct = tk.Button(
+            btn_frame,
+            text="📂 Abrir Janela do Diretório (Nautilus)",
+            command=self.open_tc_folder,
+            bg="#22c55e",
+            fg="#0f172a",
+            font=("Inter", 10, "bold"),
+            relief="flat",
+            pady=6,
+            cursor="hand2"
+        )
+        self.btn_open_direct.pack(fill="x", pady=4)
+
         self.btn_unmount = tk.Button(
             btn_frame,
             text="🛑 Desmontar Compartilhamento",
@@ -388,6 +401,28 @@ class MultiManagerApp:
         except Exception:
             self.status_indicator.config(text=f"✖ ERRO DE REDE EM {ip}", fg=self.red_color)
 
+    def open_tc_folder(self):
+        ip = self.ent_ip.get().strip()
+        share = self.ent_share.get().strip()
+        user = self.ent_user.get().strip()
+
+        env = dict(os.environ, DISPLAY=os.environ.get('DISPLAY', ':0'), XDG_RUNTIME_DIR=os.environ.get('XDG_RUNTIME_DIR', '/run/user/1000'))
+        url = f"smb://{user}@{ip}/{share}"
+
+        uid = os.getuid()
+        gvfs_path = f"/run/user/{uid}/gvfs/smb-share:server={ip},share={share.lower()}"
+        alt_gvfs_path = f"/run/user/{uid}/gvfs/smb-share:server={ip},share={share}"
+
+        target = gvfs_path if os.path.exists(gvfs_path) else (alt_gvfs_path if os.path.exists(alt_gvfs_path) else url)
+        
+        try:
+            subprocess.Popen(["nautilus", target], env=env)
+        except Exception:
+            try:
+                subprocess.Popen(["gio", "open", target], env=env)
+            except Exception as e:
+                messagebox.showerror("Erro", f"Não foi possível abrir a janela do diretório: {e}")
+
     def mount_tc_and_open(self):
         ip = self.ent_ip.get().strip()
         share = self.ent_share.get().strip()
@@ -398,22 +433,15 @@ class MultiManagerApp:
         save_config(self.config)
 
         url = f"smb://{user}@{ip}/{share}"
+        env = dict(os.environ, DISPLAY=os.environ.get('DISPLAY', ':0'), XDG_RUNTIME_DIR=os.environ.get('XDG_RUNTIME_DIR', '/run/user/1000'))
+
         try:
             subprocess.run(["gio", "mount", "-u", url], capture_output=True)
             proc = subprocess.Popen(["gio", "mount", url], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
             proc.communicate(input=f"{password}\nWORKGROUP\n")
 
-            uid = os.getuid()
-            gvfs_path = f"/run/user/{uid}/gvfs/smb-share:server={ip},share={share.lower()}"
-            alt_gvfs_path = f"/run/user/{uid}/gvfs/smb-share:server={ip},share={share}"
-
-            target_path = gvfs_path if os.path.exists(gvfs_path) else (alt_gvfs_path if os.path.exists(alt_gvfs_path) else None)
-            if target_path:
-                subprocess.Popen(["xdg-open", target_path])
-                messagebox.showinfo("Sucesso", f"Time Capsule montada em:\n{target_path}")
-            else:
-                subprocess.Popen(["gio", "open", url])
-                messagebox.showinfo("Montado", f"Comando de montagem enviado para {url}!")
+            # Abertura direta e imediata da janela do Nautilus
+            self.open_tc_folder()
         except Exception as e:
             messagebox.showerror("Erro", f"Falha na montagem: {e}")
 

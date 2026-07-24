@@ -448,6 +448,20 @@ class TimeCapsuleService {
       }
     };
   }
+
+  async mountOnLinux({ ip = '192.168.3.10', shareName = 'Data', username = 'admin', password = 'P@ntera22' } = {}) {
+    const { exec } = await import('child_process');
+    return new Promise((resolve) => {
+      const scriptPath = '/home/enio/Documentos/projetos/gerenciador_tc/app_montador_tc.py';
+      exec(`python3 "${scriptPath}" &`, (err) => {
+        if (err) {
+          return resolve({ success: false, message: `Erro ao iniciar montador: ${err.message}` });
+        }
+        resolve({ success: true, message: 'Aplicativo Montador Time Capsule iniciado com sucesso no Linux!' });
+      });
+    });
+  }
 }
 
 export const timeCapsuleService = new TimeCapsuleService();
+

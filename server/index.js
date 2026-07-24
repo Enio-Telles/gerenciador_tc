@@ -67,6 +67,12 @@ app.post('/api/timecapsule/test-connection', async (req, res) => {
   res.json(result);
 });
 
+app.post('/api/timecapsule/mount-linux', async (req, res) => {
+  const result = await timeCapsuleService.mountOnLinux(req.body);
+  res.json(result);
+});
+
+
 // Cloud Providers endpoints
 app.get('/api/cloud/providers', async (req, res) => {
   const providers = await cloudSyncService.getProvidersStatus();

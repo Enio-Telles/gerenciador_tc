@@ -81,14 +81,32 @@ export function TCConfigModal({ isOpen, onClose, currentConfig, onTestConnection
             </div>
           )}
 
-          <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
-            <button type="submit" className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }} disabled={testing}>
-              {testing ? <RefreshCw size={16} className="spin" /> : <Wifi size={16} />}
-              {testing ? 'Testando Conexão...' : 'Testar Conexão SMB'}
-            </button>
-            
-            <button type="button" className="btn btn-secondary" onClick={onClose}>
-              Salvar & Fechar
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '12px' }}>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button type="submit" className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }} disabled={testing}>
+                {testing ? <RefreshCw size={16} className="spin" /> : <Wifi size={16} />}
+                {testing ? 'Testando Conexão...' : 'Testar Conexão SMB'}
+              </button>
+              
+              <button type="button" className="btn btn-secondary" onClick={onClose}>
+                Salvar & Fechar
+              </button>
+            </div>
+
+            <button 
+              type="button" 
+              className="btn" 
+              style={{ background: '#0284c7', color: 'white', justifyContent: 'center', width: '100%' }}
+              onClick={async () => {
+                try {
+                  await fetch('http://localhost:3001/api/timecapsule/mount-linux', { method: 'POST' });
+                  alert('🚀 Aplicativo Montador de Time Capsule iniciado no Linux!');
+                } catch (e) {
+                  alert('Erro ao iniciar o aplicativo: ' + e.message);
+                }
+              }}
+            >
+              🚀 Abrir App Montador de Disco no Linux
             </button>
           </div>
         </form>
@@ -96,3 +114,4 @@ export function TCConfigModal({ isOpen, onClose, currentConfig, onTestConnection
     </div>
   );
 }
+

@@ -134,6 +134,69 @@ app.post('/api/windows/open-disks', (req, res) => {
   });
 });
 
+// Scan largest files on Windows partition
+app.get('/api/windows/largest-files', (req, res) => {
+  const targetPath = req.query.path || '/mnt/windows/Users /mnt/windows/projetos /mnt/windows/Downloads';
+  const minSize = req.query.minSize || '50M';
+  const cmd = `find ${targetPath} -maxdepth 6 -type f -size +${minSize} -exec du -b {} + 2>/dev/null | sort -rh | head -n 40`;
+
+  import('child_process').then(({ exec }) => {
+    exec(cmd, { maxBuffer: 10 * 1024 * 1024 }, (err, stdout) => {
+      if (err && !stdout) return res.json({ success: false, files: [] });
+      try {
+        const lines = stdout.split('\n').filter(Boolean);
+        const files = lines.map((line, idx) => {
+          const parts = line.trim().split('\t');
+          if (parts.length < 2) return null;
+          const bytes = parseInt(parts[0], 10) || 0;
+          const fullPath = parts[1];
+          const filename = fullPath.split('/').pop();
+          const winPath = fullPath.replace('/mnt/windows', 'C:').replace(/\//g, '\\');
+
+          let formattedSize = `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+          if (bytes >= 1024 * 1024 * 1024) {
+            formattedSize = `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
+          }
+
+          return {
+            id: `win_file_${idx}`,
+            name: filename,
+            path: fullPath,
+            winPath,
+            size: formattedSize,
+            sizeBytes: bytes
+          };
+        }).filter(Boolean);
+
+        res.json({ success: true, files });
+      } catch (e) {
+        res.json({ success: false, files: [], error: e.message });
+      }
+    });
+  });
+});
+
+// Delete specific file on Windows partition
+app.post('/api/windows/delete-file', (req, res) => {
+  const { filePath } = req.body;
+  if (!filePath || !filePath.startsWith('/mnt/windows/')) {
+    return res.status(400).json({ success: false, message: 'Caminho inválido ou fora da partição Windows.' });
+  }
+
+  import('fs').then((fs) => {
+    try {
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+        res.json({ success: true, message: `Arquivo ${filePath.split('/').pop()} excluído com sucesso!` });
+      } else {
+        res.status(404).json({ success: false, message: 'Arquivo não encontrado.' });
+      }
+    } catch (e) {
+      res.status(500).json({ success: false, message: `Erro ao excluir arquivo: ${e.message}` });
+    }
+  });
+});
+
 
 // Cloud Providers endpoints
 app.get('/api/cloud/providers', async (req, res) => {

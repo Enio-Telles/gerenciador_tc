@@ -110,7 +110,7 @@ def generate(context_text: str, files: list[str]) -> dict[str, str]:
     raw = payload.get('choices', [{}])[0].get('message', {}).get('content', '')
     raw = re.sub(r'^```(?:json)?\s*|\s*```$', '', raw.strip(), flags=re.I)
     result = json.loads(raw)
-    if set(result) != set(PAGES) or not all(isinstance(result[k], str) for k in PAGES.values()):
+    if set(result) != set(PAGES.values()) or not all(isinstance(result[k], str) for k in PAGES.values()):
         raise RuntimeError('invalid OpenRouter schema')
     for key, value in result.items():
         if '## Português (Brasil)' not in value or '## English' not in value:

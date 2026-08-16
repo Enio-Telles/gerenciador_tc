@@ -1,3 +1,9 @@
+<!-- wiki-bilingual-link:start -->
+[![Wiki bilíngue](https://img.shields.io/badge/Wiki-Bilingual-blue?logo=readthedocs)](https://github.com/Enio-Telles/gerenciador_tc/wiki)
+
+> **Documentação / Documentation:** consulte a [Wiki bilíngue do projeto](https://github.com/Enio-Telles/gerenciador_tc/wiki) para visão geral, arquitetura, instalação, uso, contribuição e troubleshooting.
+<!-- wiki-bilingual-link:end -->
+
 # 🚀 Gerenciador Time Capsule (Gerenciador TC)
 
 Aplicação web para monitoramento de armazenamento, gerenciamento de arquivos e automação de sincronização/descarregamento (*offload*) entre unidades **Apple Time Capsule** e provedores de nuvem (como OneDrive, Google Drive e Dropbox).

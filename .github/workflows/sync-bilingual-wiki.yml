@@ -44,5 +44,5 @@ jobs:
           GITHUB_REPOSITORY: ${{ github.repository }}
           TARGET_BRANCH: ${{ github.event.repository.default_branch }}
           GITHUB_EVENT_NAME: ${{ github.event_name }}
-          WIKI_MODEL: openrouter/free
+          WIKI_MODEL: openai/gpt-oss-20b:free
         run: python .github/scripts/sync_bilingual_wiki.py

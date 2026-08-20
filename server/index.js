@@ -1,3 +1,5 @@
+import path from 'path';
+import { fileURLToPath } from 'url';
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -5,6 +7,8 @@ import { timeCapsuleService } from './services/timeCapsuleService.js';
 import { cloudSyncService } from './services/cloudSyncService.js';
 
 dotenv.config();
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -272,6 +276,15 @@ app.get('/api/rules', (req, res) => {
 app.post('/api/rules', (req, res) => {
   const newRule = cloudSyncService.addSyncRule(req.body);
   res.json(newRule);
+});
+
+// Serve o build de produção do frontend (dist/) no mesmo processo/porta.
+// Precisa vir depois das rotas /api/* acima, senão a rota catch-all abaixo
+// engoliria as chamadas de API.
+const distDir = path.join(__dirname, '..', 'dist');
+app.use(express.static(distDir));
+app.use((req, res) => {
+  res.sendFile(path.join(distDir, 'index.html'));
 });
 
 app.listen(PORT, () => {

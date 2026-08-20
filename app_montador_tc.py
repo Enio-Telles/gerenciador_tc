@@ -16,10 +16,10 @@ from tkinter import ttk, messagebox
 CONFIG_FILE = os.path.expanduser('~/.timecapsule_config.json')
 
 DEFAULT_CONFIG = {
-    'ip': '192.168.3.10',
-    'shareName': 'Data',
-    'username': 'admin',
-    'password': 'P@ntera22',
+    'ip': os.environ.get('TIMECAPSULE_HOST', '192.168.3.10'),
+    'shareName': os.environ.get('TIMECAPSULE_SHARE', 'Data'),
+    'username': os.environ.get('TIMECAPSULE_USER', ''),
+    'password': os.environ.get('TIMECAPSULE_PASSWORD', ''),
     'winMountPath': '/mnt/windows'
 }
 

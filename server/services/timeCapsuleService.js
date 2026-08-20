@@ -449,7 +449,12 @@ class TimeCapsuleService {
     };
   }
 
-  async mountOnLinux({ ip = '192.168.3.10', shareName = 'Data', username = 'admin', password = 'P@ntera22' } = {}) {
+  async mountOnLinux({
+    ip = process.env.TIMECAPSULE_HOST || '192.168.3.10',
+    shareName = process.env.TIMECAPSULE_SHARE || 'Data',
+    username = process.env.TIMECAPSULE_USER || '',
+    password = process.env.TIMECAPSULE_PASSWORD || '',
+  } = {}) {
     const { exec } = await import('child_process');
     return new Promise((resolve) => {
       const scriptPath = '/home/enio/Documentos/projetos/gerenciador_tc/app_montador_tc.py';

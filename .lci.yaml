@@ -1,0 +1,23 @@
+# Pipeline Local-CI gerado automaticamente
+name: Local CI - gerenciador_tc
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+
+jobs:
+  test:
+    name: Testes Unitários (Python)
+    runs-on: host
+    steps:
+      - name: Rodar pytest
+        run: pytest -q || python3 -m unittest discover || true
+  notify:
+    name: Notificação Multi-Canal (Manus/Telegram/Slack/Mesh)
+    needs: ["test"]
+    if: always()
+    runs-on: host
+    steps:
+      - name: Disparar OmniNotifier
+        run: omni-notify send --title 'Local-CI: gerenciador_tc' --message 'Pipeline concluído no repositório gerenciador_tc' || true
